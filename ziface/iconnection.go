@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:49
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-22 15:58:17
+ * @LastEditTime: 2020-10-26 10:48:21
  * @Description: 连接的模块方法
  * @FilePath: /Zinx_Learning/ziface/iconnection.go
  */

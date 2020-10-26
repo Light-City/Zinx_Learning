@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-22 16:37:09
+ * @LastEditTime: 2020-10-26 11:24:04
  * @Description:
  * @FilePath: /Zinx_Learning/znet/connection.go
  */
@@ -25,20 +25,20 @@ type Connection struct {
 	ConnID uint32
 	// 当前连接的状态(是否已经关闭)
 	isClosed bool
-	// 与当前连接所绑定的处理业务
-	handleAPI ziface.HandleFunc
 	// 等待连接被动退出的channel
 	ExitChan chan bool
+	// 该连接处理的方法Router
+	Router ziface.IRouter
 }
 
 // 初始化连接模块的方法
-func NewConnection(conn *net.TCPConn, connID uint32, callback_api ziface.HandleFunc) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
 	c := &Connection{
-		Conn:      conn,
-		ConnID:    connID,
-		handleAPI: callback_api,
-		isClosed:  false,
-		ExitChan:  make(chan bool, 1),
+		Conn:     conn,
+		ConnID:   connID,
+		Router:   router,
+		isClosed: false,
+		ExitChan: make(chan bool, 1),
 	}
 	return c
 }
@@ -51,16 +51,23 @@ func (c *Connection) StartReader() {
 	for {
 		// 读取客户端的数据到buf中， 最大512字节
 		buf := make([]byte, 512)
-		cnt, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err", buf)
 			continue
 		}
-		// 调用当前连接所绑定的HandleAPI
-		if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
-			fmt.Println("ConnID", c.ConnID, " handle is error", err)
-			break
+
+		// 得到当前conn数据的Request请求数据
+		req := Request{
+			conn: c,
+			data: buf,
 		}
+		// 执行注册的路由方法
+		go func(request ziface.IRequest) {
+			c.Router.PreHandle(request)
+			c.Router.Handle(request)
+			c.Router.PostHandle(request)
+		}(&req)
 	}
 }
 

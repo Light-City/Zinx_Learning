@@ -2,14 +2,13 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:34:58
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-22 16:32:14
+ * @LastEditTime: 2020-10-26 11:24:26
  * @Description:
  * @FilePath: /Zinx_Learning/znet/server.go
  */
 package znet
 
 import (
-	"errors"
 	"fmt"
 	"net"
 
@@ -26,17 +25,8 @@ type Server struct {
 	IP string
 	// 端口
 	Port int
-}
-
-// 定义当前客户端连接的所绑定的handle api(目前写死,以后优化自定义)
-func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	// 回显
-	fmt.Println("[Conn Handle] CallbackToClient")
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("write back buf err", err)
-		return errors.New("CallBackToClient error")
-	}
-	return nil
+	// 当前的Server添加一个router，server注册的连接对应的处理业务
+	Router ziface.IRouter
 }
 
 // 启动
@@ -69,7 +59,7 @@ func (s *Server) Start() {
 				continue
 			}
 			// 将该处理新连接的业务方法和conn进行绑定 得到我们的连接模块
-			dealConn := NewConnection(conn, cid, CallBackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 
 			go dealConn.Start()
@@ -93,6 +83,12 @@ func (s *Server) Server() {
 	select {}
 }
 
+// 路由
+func (s *Server) AddRouter(router ziface.IRouter) {
+	s.Router = router
+	fmt.Println("Add router succ!")
+}
+
 /*
 	初始化Server模块的方法
 */
@@ -102,6 +98,7 @@ func NewServer(name string) ziface.IServer {
 		IPVersion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8999,
+		Router:    nil,
 	}
 	return s
 }
