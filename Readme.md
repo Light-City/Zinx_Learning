@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-22 16:42:16
+ * @LastEditTime: 2020-10-26 11:09:17
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -20,3 +20,26 @@ name名称、监听的IP、监听的端口
 连接所绑定的处理业务函数
 - 属性
 socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、与当前连接所绑定的处理业务、等待连接被动退出的channel
+
+## 3.V0.3 基础Route模块
+
+- Request请求封装
+  - 将连接与数据和绑定到一起
+    - 属性
+    连接Connection、请求数据
+    - 方法
+    得到当前连接、得到当前数据
+- Route模块
+  - 抽象的Router
+    - 处理业务之前的方法
+    - 处理业务的主方法
+    - 处理业务之后的方法
+  - 具体BaseRoute
+    - 处理业务之前的方法
+    - 处理业务的主方法
+    - 处理业务之后的方法
+- zinx集成route模块
+  - IServer增添路由添加功能
+  - Server类增添Route成员
+  - Connection类绑定一个Route成员
+  - 在Connection调用已经注册的Route处理业务
