@@ -2,9 +2,9 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:34:58
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 11:24:26
+ * @LastEditTime: 2020-10-26 21:12:14
  * @Description:
- * @FilePath: /Zinx_Learning/znet/server.go
+ * @FilePath: \Zinx_Learning\znet\server.go
  */
 package znet
 
@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net"
 
+	"light.com/guangcheng/utils"
 	"light.com/guangcheng/ziface"
 )
 
@@ -31,6 +32,12 @@ type Server struct {
 
 // 启动
 func (s *Server) Start() {
+	fmt.Printf("[Zinx] Server Name: %s, listerner at IP : %s, Port: %d is starting\n", utils.GlobalObject.Name,
+		utils.GlobalObject.Host, utils.GlobalObject.TcpPort)
+	fmt.Printf("[Zinx] Version :%s, MaxConn:%d, MaxPacketSize:%d\n",
+		utils.GlobalObject.Version,
+		utils.GlobalObject.MaxConn,
+		utils.GlobalObject.MaxPackageSize)
 	fmt.Printf("[Start Server Listenner at IP: %s, Port: %d, is starting]\n", s.IP, s.Port)
 
 	// 异步 防止后面read阻塞
@@ -93,11 +100,12 @@ func (s *Server) AddRouter(router ziface.IRouter) {
 	初始化Server模块的方法
 */
 func NewServer(name string) ziface.IServer {
+
 	s := &Server{
-		Name:      name,
+		Name:      utils.GlobalObject.Name, // 导包 "light.com/guangcheng/utils" 里面init方法会默认执行
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0",
-		Port:      8999,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		Router:    nil,
 	}
 	return s

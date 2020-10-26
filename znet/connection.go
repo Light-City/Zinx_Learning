@@ -2,22 +2,24 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 11:24:04
+ * @LastEditTime: 2020-10-26 20:57:22
  * @Description:
- * @FilePath: /Zinx_Learning/znet/connection.go
+ * @FilePath: \Zinx_Learning\znet\connection.go
  */
 package znet
 
+/*
+ 连接模块
+*/
 import (
 	"fmt"
 	"net"
 
+	"light.com/guangcheng/utils"
 	"light.com/guangcheng/ziface"
 )
 
-/**
- * @description: 连接模块
- */
+// 连接模块
 type Connection struct {
 	// socket TCP套接字
 	Conn *net.TCPConn
@@ -49,8 +51,8 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		// 读取客户端的数据到buf中， 最大512字节
-		buf := make([]byte, 512)
+		// 读取客户端的数据到buf中， 最大MaxPackageSize字节
+		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
 		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err", buf)

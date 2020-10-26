@@ -43,3 +43,20 @@ socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、
   - Server类增添Route成员
   - Connection类绑定一个Route成员
   - 在Connection调用已经注册的Route处理业务
+
+  ## 4.V0.4 Zinx的全局配置
+
+  zinx.json用户填写
+
+```json
+{
+  "Name" : "demo server",
+  "Host" : "127.0.0.1",
+  "TcpPort" : 7777,
+  "MaxConn" : 3
+}
+```
+  - 创建全局参数文件
+  init 读取用户配置好的zinx.json文件,保存到全局对象中
+  - 硬参数替换与Server初始化参数配置
+  将zinx框架种全部的硬代码，用全局对象的参数进行替换
