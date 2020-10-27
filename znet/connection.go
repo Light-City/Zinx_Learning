@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 15:02:38
+ * @LastEditTime: 2020-10-27 17:33:19
  * @Description:
  * @FilePath: /Zinx_Learning/znet/connection.go
  */
@@ -28,9 +28,11 @@ type Connection struct {
 	// 连接的ID
 	ConnID uint32
 	// 当前连接的状态(是否已经关闭)
-	isClosed bool
+	IsClosed bool
 	// 等待连接被动退出的channel
-	ExitChan chan bool
+	ExitChan chan bool // 由reader告知writer退出
+	// 无缓冲 管道 用于读、写goroutine之间的消息通信
+	MsgChan chan []byte
 	// 该连接处理的方法Router
 	MsgHandler ziface.IMsgHandler
 }
@@ -41,21 +43,24 @@ func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandl
 		Conn:       conn,
 		ConnID:     connID,
 		MsgHandler: msgHandler,
-		isClosed:   false,
+		IsClosed:   false,
+		MsgChan:    make(chan []byte),
 		ExitChan:   make(chan bool, 1),
 	}
 	return c
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("Reader Goroutine is running...")
-	defer fmt.Println("connID = ", c.ConnID, "Reader is exit, remote addr is", c.RemoteAddr().String())
+	fmt.Println("[Reader Goroutine is running]")
+	defer fmt.Println("connID = ", c.ConnID, "[Reader is exit, remote addr is", c.RemoteAddr().String()+"]")
 	defer c.Stop()
 
 	for {
 		// 读取客户端的数据到buf中， 最大MaxPackageSize字节
 		dp := NewDataPack()
 		headData := make([]byte, dp.GetHeadLen())
+
+		// 读端断连 EOF
 		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
 			fmt.Println("read msg head error", err)
 			break
@@ -88,21 +93,43 @@ func (c *Connection) StartReader() {
 	}
 }
 
+// 写消息goroutine 专门发送给客户端消息的模块
+func (c *Connection) StartWriter() {
+	fmt.Println("[Writer Goroutine is running]")
+	defer fmt.Println("connID = ", c.ConnID, "[Writer is exit, remote addr is", c.RemoteAddr().String()+"]")
+	// 不断阻塞等待channel的消息,进行回写给客户端
+	for {
+		select {
+		case data := <-c.MsgChan:
+			// 有数据要写给客户端
+			if _, err := c.Conn.Write(data); err != nil {
+				fmt.Println("Send data error,", err)
+				return
+			}
+		case <-c.ExitChan: // 可读
+			// 代表Reader已经退出，此时Writer可以退出
+			return
+		}
+	}
+}
 func (c *Connection) Start() {
 	fmt.Println("Conn Start()... ConnID = ", c.ConnID)
 	// TODO 启动从当前连接读数据的业务
 	go c.StartReader()
+	go c.StartWriter()
 	// TODO 启动从当前连接写数据的业务
 }
 
 func (c *Connection) Stop() {
 	fmt.Println("Conn Stop()... ConnID = ", c.ConnID)
-	if c.isClosed == true {
+	if c.IsClosed == true {
 		return
 	}
-	c.isClosed = false
+	c.IsClosed = false
 	c.Conn.Close()
+	c.ExitChan <- true // 告知Writer关闭
 	close(c.ExitChan)
+	close(c.MsgChan)
 }
 
 func (c *Connection) GetTcpConnection() *net.TCPConn {
@@ -117,7 +144,7 @@ func (c *Connection) RemoteAddr() net.Addr {
 
 // 提供一个SendMsg方法 将我们要发送给客户端的数据，先进性封包，再发送
 func (c *Connection) SendMsg(msgId uint32, data []byte) error {
-	if c.isClosed == true {
+	if c.IsClosed == true {
 		return errors.New("Connection closed when send msg")
 	}
 
@@ -128,9 +155,6 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 		fmt.Println("pack error msg id=", msgId)
 		return errors.New("Pack error msg")
 	}
-	if _, err := c.Conn.Write(binaryMsg); err != nil {
-		fmt.Println("Write msg id", msgId, "error:", err)
-		return errors.New("conn write error")
-	}
+	c.MsgChan <- binaryMsg // 数据发送给Chan
 	return nil
 }
