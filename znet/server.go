@@ -2,9 +2,9 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:34:58
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 21:12:14
+ * @LastEditTime: 2020-10-27 15:00:12
  * @Description:
- * @FilePath: \Zinx_Learning\znet\server.go
+ * @FilePath: /Zinx_Learning/znet/server.go
  */
 package znet
 
@@ -26,8 +26,8 @@ type Server struct {
 	IP string
 	// 端口
 	Port int
-	// 当前的Server添加一个router，server注册的连接对应的处理业务
-	Router ziface.IRouter
+	// 当前Server的消息管理模块,用来绑定MsgID和对应的处理业务API关系
+	MsgHandler ziface.IMsgHandler
 }
 
 // 启动
@@ -66,7 +66,7 @@ func (s *Server) Start() {
 				continue
 			}
 			// 将该处理新连接的业务方法和conn进行绑定 得到我们的连接模块
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.MsgHandler)
 			cid++
 
 			go dealConn.Start()
@@ -91,8 +91,8 @@ func (s *Server) Server() {
 }
 
 // 路由
-func (s *Server) AddRouter(router ziface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgID uint32, router ziface.IRouter) {
+	s.MsgHandler.AddRouter(msgID, router)
 	fmt.Println("Add router succ!")
 }
 
@@ -102,11 +102,11 @@ func (s *Server) AddRouter(router ziface.IRouter) {
 func NewServer(name string) ziface.IServer {
 
 	s := &Server{
-		Name:      utils.GlobalObject.Name, // 导包 "light.com/guangcheng/utils" 里面init方法会默认执行
-		IPVersion: "tcp4",
-		IP:        utils.GlobalObject.Host,
-		Port:      utils.GlobalObject.TcpPort,
-		Router:    nil,
+		Name:       utils.GlobalObject.Name, // 导包 "light.com/guangcheng/utils" 里面init方法会默认执行
+		IPVersion:  "tcp4",
+		IP:         utils.GlobalObject.Host,
+		Port:       utils.GlobalObject.TcpPort,
+		MsgHandler: NewMsgHandler(),
 	}
 	return s
 }

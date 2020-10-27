@@ -2,15 +2,12 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 11:01:06
+ * @LastEditTime: 2020-10-27 15:02:38
  * @Description:
- * @FilePath: \Zinx_Learning\znet\connection.go
+ * @FilePath: /Zinx_Learning/znet/connection.go
  */
 package znet
 
-/*
- 连接模块
-*/
 import (
 	"errors"
 	"fmt"
@@ -19,6 +16,10 @@ import (
 
 	"light.com/guangcheng/ziface"
 )
+
+/*
+ 连接模块
+*/
 
 // 连接模块
 type Connection struct {
@@ -31,17 +32,17 @@ type Connection struct {
 	// 等待连接被动退出的channel
 	ExitChan chan bool
 	// 该连接处理的方法Router
-	Router ziface.IRouter
+	MsgHandler ziface.IMsgHandler
 }
 
 // 初始化连接模块的方法
-func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandler) *Connection {
 	c := &Connection{
-		Conn:     conn,
-		ConnID:   connID,
-		Router:   router,
-		isClosed: false,
-		ExitChan: make(chan bool, 1),
+		Conn:       conn,
+		ConnID:     connID,
+		MsgHandler: msgHandler,
+		isClosed:   false,
+		ExitChan:   make(chan bool, 1),
 	}
 	return c
 }
@@ -83,11 +84,7 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 		// 执行注册的路由方法
-		go func(request ziface.IRequest) {
-			c.Router.PreHandle(request)
-			c.Router.Handle(request)
-			c.Router.PostHandle(request)
-		}(&req)
+		go c.MsgHandler.DoMsgHandler(&req)
 	}
 }
 
