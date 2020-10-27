@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 14:13:31
+ * @LastEditTime: 2020-10-27 14:24:12
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -80,3 +80,11 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
     - 先读取8字节head，再取偏移拿Data
 
 - 消息封装机制继承在Zinx框架中
+
+## 6.V0.6 多路由模式
+
+- 消息管理模块(支持多路由业务api调度管理)
+  - 属性
+  集合-消息ID和对应的router的关系map存储
+  - 方法
+  根据msgID来索引调度路由方法、添加方法到map集合中
