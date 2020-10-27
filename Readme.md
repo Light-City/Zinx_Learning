@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 08:22:15
+ * @LastEditTime: 2020-10-27 10:34:18
  * @Description:
  * @FilePath: \Zinx_Learning\Readme.md
 -->
@@ -78,3 +78,5 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
     - Len+ID+Data
   - 针对Message进行TLV格式的拆包
     - 先读取8字节head，再取偏移拿Data
+
+- 消息封装机制继承在Zinx框架中

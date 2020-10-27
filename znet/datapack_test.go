@@ -3,7 +3,7 @@
  * @Autor: 光城
  * @Date: 2020-10-27 08:19:03
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 09:09:30
+ * @LastEditTime: 2020-10-27 10:13:41
  * @FilePath: \Zinx_Learning\znet\datapack_test.go
  */
 
@@ -33,6 +33,7 @@ func TestDataPack_Pack(t *testing.T) {
 				dp := NewDataPack()
 				for {
 					headData := make([]byte, dp.GetHeadLen())
+					// ReadFull 可以读取任意对象的数据(该对象必须是实现Read方法)
 					_, err := io.ReadFull(conn, headData)
 					if err != nil {
 						fmt.Println("read head error", err)
@@ -52,7 +53,7 @@ func TestDataPack_Pack(t *testing.T) {
 							fmt.Println("server unpack data error", err)
 							return
 						}
-						fmt.Println("-> Recv MsgID:", msg.Id, ",datalen=", msg.DataLen, ",data=", msg.Data)
+						fmt.Println("-> Recv MsgID:", msg.Id, ",datalen=", msg.DataLen, ",data=", string(msg.Data))
 					}
 				}
 			}(conn)

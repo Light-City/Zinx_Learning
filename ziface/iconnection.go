@@ -2,9 +2,9 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:49
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 10:48:21
+ * @LastEditTime: 2020-10-27 11:01:45
  * @Description: 连接的模块方法
- * @FilePath: /Zinx_Learning/ziface/iconnection.go
+ * @FilePath: \Zinx_Learning\ziface\iconnection.go
  */
 package ziface
 
@@ -23,7 +23,7 @@ type IConnection interface {
 	// 获取远程客户端的TCP状态 IP Port
 	RemoteAddr() net.Addr
 	// 发送数据 将数据发送给远程的客户端
-	Send(data []byte) error
+	SendMsg(msgId uint32, data []byte) error
 }
 
 /**

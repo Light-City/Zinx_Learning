@@ -3,7 +3,7 @@
  * @Autor: 光城
  * @Date: 2020-10-27 08:05:47
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 08:11:43
+ * @LastEditTime: 2020-10-27 10:53:03
  * @FilePath: \Zinx_Learning\znet\message.go
  */
 package znet
@@ -31,4 +31,12 @@ func (m *Message) SetMsgLen(len uint32) {
 }
 func (m *Message) SetData(data []byte) {
 	m.Data = data
+}
+
+func NewMsgPackage(id uint32, data []byte) *Message {
+	return &Message{
+		Id:      id,
+		DataLen: uint32(len(data)),
+		Data:    data,
+	}
 }
