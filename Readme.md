@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 17:35:36
+ * @LastEditTime: 2020-10-27 17:40:09
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -89,7 +89,7 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
   - 方法
   根据msgID来索引调度路由方法、添加方法到map集合中
 
-## 7.V0.7 读写协成分离
+## 7.V0.7 读写协程分离
 - 添加一个Reader和Writer之间通信的channel
 - 添加一个Writer Goroutine
 - Reader由之前直接发送给客户端改为发送给通信Channel
