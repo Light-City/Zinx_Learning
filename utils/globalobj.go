@@ -3,7 +3,7 @@
  * @Autor: 光城
  * @Date: 2020-10-26 20:26:00
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 21:08:23
+ * @LastEditTime: 2020-10-27 09:08:14
  * @FilePath: \Zinx_Learning\utils\globalobj.go
  */
 package utils
@@ -67,5 +67,5 @@ func init() {
 		MaxPackageSize: 4096,
 	}
 	// 应该从配置文件中加载
-	GlobalObject.Reload()
+	// GlobalObject.Reload()
 }
