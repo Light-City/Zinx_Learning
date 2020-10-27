@@ -2,9 +2,9 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 11:24:04
+ * @LastEditTime: 2020-10-27 09:34:10
  * @Description:
- * @FilePath: /Zinx_Learning/znet/connection.go
+ * @FilePath: \Zinx_Learning\znet\connection.go
  */
 package znet
 
@@ -15,9 +15,8 @@ import (
 	"light.com/guangcheng/ziface"
 )
 
-/**
- * @description: 连接模块
- */
+// 连接模块
+
 type Connection struct {
 	// socket TCP套接字
 	Conn *net.TCPConn
@@ -45,7 +44,7 @@ func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Con
 
 func (c *Connection) StartReader() {
 	fmt.Println("Reader Goroutine is running...")
-	defer fmt.Println("connID = ", c.ConnID, "Reader is exit, remote addr is", c.RemoteAddr().String)
+	defer fmt.Println("connID = ", c.ConnID, "Reader is exit, remote addr is", c.RemoteAddr().String())
 	defer c.Stop()
 
 	for {
