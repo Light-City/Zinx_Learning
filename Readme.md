@@ -2,9 +2,9 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 10:34:18
+ * @LastEditTime: 2020-10-27 14:13:31
  * @Description:
- * @FilePath: \Zinx_Learning\Readme.md
+ * @FilePath: /Zinx_Learning/Readme.md
 -->
 ## 1.V0.1 基础server
 - 方法
@@ -44,7 +44,7 @@ socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、
   - Connection类绑定一个Route成员
   - 在Connection调用已经注册的Route处理业务
 
-  ## 4.V0.4 Zinx的全局配置
+## 4.V0.4 Zinx的全局配置
 
   zinx.json用户填写
 
@@ -61,7 +61,7 @@ socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、
   - 硬参数替换与Server初始化参数配置
   将zinx框架种全部的硬代码，用全局对象的参数进行替换
 
-## V0.5 消息封装
+## 5.V0.5 消息封装
 
 - Message
   - 属性
