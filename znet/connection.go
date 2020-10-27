@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 20:57:22
+ * @LastEditTime: 2020-10-27 11:01:06
  * @Description:
  * @FilePath: \Zinx_Learning\znet\connection.go
  */
@@ -12,10 +12,11 @@ package znet
  连接模块
 */
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 
-	"light.com/guangcheng/utils"
 	"light.com/guangcheng/ziface"
 )
 
@@ -47,22 +48,39 @@ func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Con
 
 func (c *Connection) StartReader() {
 	fmt.Println("Reader Goroutine is running...")
-	defer fmt.Println("connID = ", c.ConnID, "Reader is exit, remote addr is", c.RemoteAddr().String)
+	defer fmt.Println("connID = ", c.ConnID, "Reader is exit, remote addr is", c.RemoteAddr().String())
 	defer c.Stop()
 
 	for {
 		// 读取客户端的数据到buf中， 最大MaxPackageSize字节
-		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("recv buf err", buf)
-			continue
+		dp := NewDataPack()
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
+			fmt.Println("read msg head error", err)
+			break
 		}
+
+		msg, err := dp.Unpack(headData)
+
+		if err != nil {
+			fmt.Println("unpack error", err)
+			break
+		}
+
+		var data []byte
+		if msg.GetMsgLen() > 0 {
+			data = make([]byte, msg.GetMsgLen())
+			if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
+				fmt.Println("read msg data error", err)
+				break
+			}
+		}
+		msg.SetData(data)
 
 		// 得到当前conn数据的Request请求数据
 		req := Request{
 			conn: c,
-			data: buf,
+			msg:  msg,
 		}
 		// 执行注册的路由方法
 		go func(request ziface.IRequest) {
@@ -99,6 +117,23 @@ func (c *Connection) GetConnID() uint32 {
 func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
-func (c *Connection) Send(data []byte) error {
+
+// 提供一个SendMsg方法 将我们要发送给客户端的数据，先进性封包，再发送
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+	if c.isClosed == true {
+		return errors.New("Connection closed when send msg")
+	}
+
+	// 将data进行封包 |MsgDataLen|MsgID|Data|))
+	dp := NewDataPack()
+	binaryMsg, err := dp.Pack(NewMsgPackage(msgId, data))
+	if err != nil {
+		fmt.Println("pack error msg id=", msgId)
+		return errors.New("Pack error msg")
+	}
+	if _, err := c.Conn.Write(binaryMsg); err != nil {
+		fmt.Println("Write msg id", msgId, "error:", err)
+		return errors.New("conn write error")
+	}
 	return nil
 }

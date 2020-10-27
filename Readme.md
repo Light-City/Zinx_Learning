@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 11:09:17
+ * @LastEditTime: 2020-10-27 14:13:31
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -44,7 +44,7 @@ socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、
   - Connection类绑定一个Route成员
   - 在Connection调用已经注册的Route处理业务
 
-  ## 4.V0.4 Zinx的全局配置
+## 4.V0.4 Zinx的全局配置
 
   zinx.json用户填写
 
@@ -60,3 +60,23 @@ socket TCP套接字、连接的ID、当前连接的状态(是否已经关闭)、
   init 读取用户配置好的zinx.json文件,保存到全局对象中
   - 硬参数替换与Server初始化参数配置
   将zinx框架种全部的硬代码，用全局对象的参数进行替换
+
+## 5.V0.5 消息封装
+
+- Message
+  - 属性
+  消息ID、消息长度、数据内容
+  - 方法
+  Setter、Getter
+- 解决TCP粘包
+消息TLV序列化 解决TCP粘包问题
+head:Len+id 8字节
+body:Data
+
+TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么时候截止
+  - 针对Message进行TLV格式的封装
+    - Len+ID+Data
+  - 针对Message进行TLV格式的拆包
+    - 先读取8字节head，再取偏移拿Data
+
+- 消息封装机制继承在Zinx框架中

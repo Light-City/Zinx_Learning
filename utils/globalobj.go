@@ -3,7 +3,7 @@
  * @Autor: 光城
  * @Date: 2020-10-26 20:26:00
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-26 21:08:23
+ * @LastEditTime: 2020-10-27 11:25:21
  * @FilePath: \Zinx_Learning\utils\globalobj.go
  */
 package utils
@@ -14,6 +14,8 @@ import (
 
 	"light.com/guangcheng/ziface"
 )
+
+var FileSwitch string
 
 /* 存储一切有关zinx框架的全局参数，供其他模块使用
  */
