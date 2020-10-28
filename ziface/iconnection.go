@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:49
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 15:07:39
+ * @LastEditTime: 2020-10-28 19:38:34
  * @Description: 连接的模块方法
  * @FilePath: /Zinx_Learning/ziface/iconnection.go
  */
@@ -24,6 +24,13 @@ type IConnection interface {
 	RemoteAddr() net.Addr
 	// 发送数据 将数据发送给远程的客户端
 	SendMsg(msgId uint32, data []byte) error
+
+	// 设置连接属性
+	SetProperty(key string, value interface{})
+	// 获取连接属性
+	GetProperty(key string) (interface{}, error)
+	// 移除连接属性
+	RemoteProperty(key string)
 }
 
 /**

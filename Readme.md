@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 17:06:23
+ * @LastEditTime: 2020-10-28 19:32:02
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -128,4 +128,11 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
   注册调用OnConnStart(conn)、OnConnStop(conn)方法
 - 在Conn创建之后调用OnConnStart、在Conn销毁之前调用OnConnStop
 
+## 10.V1.0 连接属性
 
+- 给Connection模块添加可以配置属性的功能
+  - 属性
+    连接属性集合map
+    保护连接属性的锁
+  - 方法
+    设置连接属性、获取连接属性、移除连接属性
