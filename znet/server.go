@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:34:58
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 15:00:12
+ * @LastEditTime: 2020-10-28 10:17:38
  * @Description:
  * @FilePath: /Zinx_Learning/znet/server.go
  */
@@ -42,6 +42,9 @@ func (s *Server) Start() {
 
 	// 异步 防止后面read阻塞
 	go func() {
+		// 0.开启消息队列及Worker工作池
+		s.MsgHandler.StartWorkerPool()
+
 		// 1.获取一个TCP的Addr 创建套接字
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {

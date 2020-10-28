@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 17:40:09
+ * @LastEditTime: 2020-10-28 09:58:43
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -94,3 +94,20 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
 - 添加一个Writer Goroutine
 - Reader由之前直接发送给客户端改为发送给通信Channel
 - 启动Reader和Writer一同工作
+
+## 8.V0.8 消息队列及多任务
+
+10w client连接 会有10w个reader(阻塞)、10w个writer(阻塞)
+阻塞并不会占用CPU
+
+10个(固定值)处理业务的goroutine,不管客户端请求数量有多大，CPU在调度go之间，只需要在10个go之间进行切换。
+
+- 创建一个消息队列
+- 创建多任务work的工作池并启动
+- 将之前的发送消息，全部改成把消息发送给消息队列和worker工作池来处理
+
+
+
+
+
+

@@ -3,5 +3,6 @@
   "Host": "127.0.0.1",
   "TcpPort": 7777,
   "MaxConn": 3,
-  "Version": "V0.7"
+  "Version": "V0.8",
+  "WorkerPoolSize": 10
 }
