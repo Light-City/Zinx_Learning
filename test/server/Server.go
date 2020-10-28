@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 11:18:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 17:24:53
+ * @LastEditTime: 2020-10-28 19:47:56
  * @Description:
  * @FilePath: /Zinx_Learning/test/server/Server.go
  */
@@ -55,10 +55,24 @@ func DoConnectionBegin(conn ziface.IConnection) {
 	if err := conn.SendMsg(202, []byte("DoConnection BEGIN")); err != nil {
 		fmt.Println(err)
 	}
+
+	// 给当前连接设置一些属性
+
+	fmt.Println("Set conn Name, Hoe...")
+	conn.SetProperty("Name", "light-city")
+	conn.SetProperty("Github", "https://github.com/light-city")
 }
 func DoConnectionLost(conn ziface.IConnection) {
 	fmt.Println("=>DoConnectionLost is Called.........")
 	fmt.Println("conn ID = ", conn.GetConnID(), "is lost.......")
+
+	// 获取连接属性
+	if name, err := conn.GetProperty("Name"); err == nil {
+		fmt.Println("Name=", name)
+	}
+	if github, err := conn.GetProperty("Github"); err == nil {
+		fmt.Println("Github=", github)
+	}
 }
 
 func main() {

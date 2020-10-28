@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 17:16:17
+ * @LastEditTime: 2020-10-28 19:51:24
  * @Description:
  * @FilePath: /Zinx_Learning/znet/connection.go
  */
@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 
 	"light.com/guangcheng/utils"
 	"light.com/guangcheng/ziface"
@@ -38,6 +39,10 @@ type Connection struct {
 	MsgChan chan []byte
 	// 该连接处理的方法Router
 	MsgHandler ziface.IMsgHandler
+	// 连接属性集合
+	Property map[string]interface{}
+	// 保护连接属性的锁
+	PropertyLock sync.RWMutex
 }
 
 // 初始化连接模块的方法
@@ -50,6 +55,7 @@ func NewConnection(server ziface.IServer, conn *net.TCPConn, connID uint32, msgH
 		IsClosed:   false,
 		MsgChan:    make(chan []byte),
 		ExitChan:   make(chan bool, 1),
+		Property:   make(map[string]interface{}),
 	}
 
 	// 将connection加入到ConnManager中
@@ -181,4 +187,28 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 	}
 	c.MsgChan <- binaryMsg // 数据发送给Chan
 	return nil
+}
+
+// 设置连接属性
+func (c *Connection) SetProperty(key string, value interface{}) {
+	c.PropertyLock.Lock()
+	defer c.PropertyLock.Unlock()
+
+	c.Property[key] = value
+}
+func (c *Connection) GetProperty(key string) (interface{}, error) {
+	c.PropertyLock.RLock()
+	defer c.PropertyLock.RUnlock()
+	if value, ok := c.Property[key]; ok {
+		return value, nil
+	} else {
+		return nil, errors.New("no property found")
+	}
+
+}
+func (c *Connection) RemoteProperty(key string) {
+	c.PropertyLock.Lock()
+	defer c.PropertyLock.Unlock()
+
+	delete(c.Property, key)
 }
