@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 17:33:19
+ * @LastEditTime: 2020-10-28 10:23:34
  * @Description:
  * @FilePath: /Zinx_Learning/znet/connection.go
  */
@@ -14,6 +14,7 @@ import (
 	"io"
 	"net"
 
+	"light.com/guangcheng/utils"
 	"light.com/guangcheng/ziface"
 )
 
@@ -88,8 +89,14 @@ func (c *Connection) StartReader() {
 			conn: c,
 			msg:  msg,
 		}
-		// 执行注册的路由方法
-		go c.MsgHandler.DoMsgHandler(&req)
+
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			// 已经开启了工作池机制，将消息发送给worker工作池处理即可
+			c.MsgHandler.SendMsgToTaskQueue(&req)
+		} else {
+			// 执行注册的路由方法
+			go c.MsgHandler.DoMsgHandler(&req)
+		}
 	}
 }
 
