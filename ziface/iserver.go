@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 16:51:06
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-27 14:59:41
+ * @LastEditTime: 2020-10-28 17:12:00
  * @Description:
  * @FilePath: /Zinx_Learning/ziface/iserver.go
  */
@@ -18,4 +18,11 @@ type IServer interface {
 	Server()
 	// 路由功能：给当前服务注册一个路由方法，供客户端的连接处理使用
 	AddRouter(msgID uint32, router IRouter)
+
+	GetConnMgr() IConnManager
+
+	SetOnConnStart(func(connection IConnection))
+	SetOnConnStop(func(connection IConnection))
+	CallOnConnStart(IConnection)
+	CallOnConnStop(IConnection)
 }

@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:30:56
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 10:23:34
+ * @LastEditTime: 2020-10-28 17:16:17
  * @Description:
  * @FilePath: /Zinx_Learning/znet/connection.go
  */
@@ -24,6 +24,8 @@ import (
 
 // 连接模块
 type Connection struct {
+	// 当前Conn隶属于哪个Server
+	TcpServer ziface.IServer
 	// socket TCP套接字
 	Conn *net.TCPConn
 	// 连接的ID
@@ -39,8 +41,9 @@ type Connection struct {
 }
 
 // 初始化连接模块的方法
-func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandler) *Connection {
+func NewConnection(server ziface.IServer, conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandler) *Connection {
 	c := &Connection{
+		TcpServer:  server,
 		Conn:       conn,
 		ConnID:     connID,
 		MsgHandler: msgHandler,
@@ -48,6 +51,9 @@ func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandl
 		MsgChan:    make(chan []byte),
 		ExitChan:   make(chan bool, 1),
 	}
+
+	// 将connection加入到ConnManager中
+	c.TcpServer.GetConnMgr().Add(c)
 	return c
 }
 
@@ -123,8 +129,10 @@ func (c *Connection) Start() {
 	fmt.Println("Conn Start()... ConnID = ", c.ConnID)
 	// TODO 启动从当前连接读数据的业务
 	go c.StartReader()
-	go c.StartWriter()
 	// TODO 启动从当前连接写数据的业务
+	go c.StartWriter()
+	// 按照开发者传递进来的 创建连接之后需要调用的处理业务，执行响应的Hook函数
+	c.TcpServer.CallOnConnStart(c)
 }
 
 func (c *Connection) Stop() {
@@ -133,8 +141,17 @@ func (c *Connection) Stop() {
 		return
 	}
 	c.IsClosed = false
+
+	// 按照开发者传递进来的 销毁连接之前需要执行的业务Hook函数
+	c.TcpServer.CallOnConnStop(c)
+
+	// 关闭socket连接
 	c.Conn.Close()
 	c.ExitChan <- true // 告知Writer关闭
+	// 将当前连接从ConnMgr中摘除掉
+	c.TcpServer.GetConnMgr().Remove(c)
+
+	// 回收资源
 	close(c.ExitChan)
 	close(c.MsgChan)
 }

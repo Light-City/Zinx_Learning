@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:34:58
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 10:17:38
+ * @LastEditTime: 2020-10-28 17:14:09
  * @Description:
  * @FilePath: /Zinx_Learning/znet/server.go
  */
@@ -28,6 +28,11 @@ type Server struct {
 	Port int
 	// 当前Server的消息管理模块,用来绑定MsgID和对应的处理业务API关系
 	MsgHandler ziface.IMsgHandler
+	// 该server的连接管理器
+	ConnMgr ziface.IConnManager
+
+	OnConnStart func(conn ziface.IConnection)
+	OnConnStop  func(conn ziface.IConnection)
 }
 
 // 启动
@@ -68,8 +73,17 @@ func (s *Server) Start() {
 				fmt.Println("Accept err", err)
 				continue
 			}
+
+			// 设置最大连接个数的判断，如果超过最大连接，那么则关闭此新的连接
+			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
+				// TODO 给客户端响应一个超出最大连接的错误包
+				fmt.Println("========>Too many Connection MaxConn=", utils.GlobalObject.MaxConn)
+				conn.Close()
+				continue
+			}
+
 			// 将该处理新连接的业务方法和conn进行绑定 得到我们的连接模块
-			dealConn := NewConnection(conn, cid, s.MsgHandler)
+			dealConn := NewConnection(s, conn, cid, s.MsgHandler)
 			cid++
 
 			go dealConn.Start()
@@ -79,7 +93,8 @@ func (s *Server) Start() {
 
 // 停止
 func (s *Server) Stop() {
-	// TODO 释放服务器资源、状态、连接信息，进行停止或回收
+	fmt.Println("[STOP] Zinx server name ", s.Name)
+	s.ConnMgr.ClearConn()
 }
 
 // 运行
@@ -110,6 +125,30 @@ func NewServer(name string) ziface.IServer {
 		IP:         utils.GlobalObject.Host,
 		Port:       utils.GlobalObject.TcpPort,
 		MsgHandler: NewMsgHandler(),
+		ConnMgr:    NewConnManager(),
 	}
 	return s
+}
+
+func (s *Server) GetConnMgr() ziface.IConnManager {
+	return s.ConnMgr
+}
+
+func (s *Server) SetOnConnStart(hookFunc func(connection ziface.IConnection)) {
+	s.OnConnStart = hookFunc
+}
+func (s *Server) SetOnConnStop(hookFunc func(connection ziface.IConnection)) {
+	s.OnConnStop = hookFunc
+}
+func (s *Server) CallOnConnStart(conn ziface.IConnection) {
+	if s.OnConnStart != nil {
+		fmt.Println("------>Call OnConnStart()...")
+		s.OnConnStart(conn)
+	}
+}
+func (s *Server) CallOnConnStop(conn ziface.IConnection) {
+	if s.OnConnStop != nil {
+		fmt.Println("------>Call OnConnStop()...")
+		s.OnConnStop(conn)
+	}
 }

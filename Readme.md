@@ -2,7 +2,7 @@
  * @Author: 光城
  * @Date: 2020-10-22 15:24:14
  * @LastEditors: 光城
- * @LastEditTime: 2020-10-28 09:58:43
+ * @LastEditTime: 2020-10-28 17:06:23
  * @Description:
  * @FilePath: /Zinx_Learning/Readme.md
 -->
@@ -106,8 +106,26 @@ TCP传输是stream,没有数据尾巴,需要在应用层判断这个包在什么
 - 创建多任务work的工作池并启动
 - 将之前的发送消息，全部改成把消息发送给消息队列和worker工作池来处理
 
+## 9.V0.9 连接管理
 
+- 创建一个连接管理模块
+  - 属性
+  已经创建的Connection集合(map)、针对map的互斥锁
+  - 方法
+  添加、删除、根据ID查找对应的连接、总连接个数、清理全部连接
+- 集成连接管理模块
+  - 将ConnManager加入Server模块中
+  - 每次成功与客户端建立连接后添加连接
+  - 判断当前连接数量是否已经超出最大值MaxConn
+  - 每次成功与客户端建立连接断开后删除连接
+- hook方法
+玩家一上线发送广播
 
-
+- 属性
+  该Server创建连接之后自动调用Hook函数
+  该Server销毁连接之前自动调用Hook函数
+- 方法
+  注册调用OnConnStart(conn)、OnConnStop(conn)方法
+- 在Conn创建之后调用OnConnStart、在Conn销毁之前调用OnConnStop
 
 
